@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BirthdayBot Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--bg2:#181b24;--bg3:#1e2130;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0f1f4;--text2:#9aa0b4;--text3:#6b7280;--accent:#3b82f6;--green:#10b981;--red:#ef4444;--pink:#ec4899}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--bg2);border-bottom:.5px solid var(--border2);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600}
+.logo span{font-size:22px}
+.status{font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,.15);color:#34d399;border:.5px solid #10b981}
+.container{max-width:800px;margin:0 auto;padding:20px}
+.card{background:var(--bg2);border:.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block}
+.form-input{width:100%;background:var(--bg3);border:.5px solid var(--border2);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:rgba(239,68,68,.15);color:#f87171;border:.5px solid rgba(239,68,68,.3)}
+.btn-full{width:100%;justify-content:center}
+.photo-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);margin-top:8px}
+.photo-placeholder{width:80px;height:80px;border-radius:50%;background:var(--bg3);border:2px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:28px;margin-top:8px}
+.person-card{background:var(--bg3);border:.5px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.person-photo{width:50px;height:50px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.person-photo-placeholder{width:50px;height:50px;border-radius:50%;background:var(--bg2);border:.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.person-info{flex:1}
+.person-name{font-size:13px;font-weight:500}
+.person-date{font-size:12px;color:var(--text3);margin-top:2px}
+.person-days{font-size:11px;color:var(--green);margin-top:2px}
+.today-badge{font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(236,72,153,.15);color:#f472b6;border:.5px solid rgba(236,72,153,.3);margin-left:6px}
+.chat-id-box{background:var(--bg3);border:.5px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.copy-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px}
+.toast{position:fixed;bottom:20px;right:20px;background:#10b981;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;background:var(--bg3);border:.5px solid var(--border);color:var(--text2)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.section{display:none}
+.section.active{display:block}
+.send-btn{background:linear-gradient(135deg,#ec4899,#8b5cf6);color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:8px}
+.send-btn:hover{opacity:.88}
+.info-box{background:rgba(59,130,246,.08);border:.5px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+.step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>🎂</span> BirthdayBot Admin</div>
+  <div class="status" id="botStatus">● Подключение...</div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('people')">👥 Люди</div>
+    <div class="tab" onclick="showTab('add')">➕ Добавить</div>
+    <div class="tab" onclick="showTab('settings')">⚙️ Настройки</div>
+    <div class="tab" onclick="showTab('send')">📤 Отправить</div>
+  </div>
+
+  <!-- ЛЮДИ -->
+  <div class="section active" id="tab-people">
+    <div class="card">
+      <div class="card-title">🎂 Дни рождения</div>
+      <div id="peopleList"><div style="color:var(--text3);font-size:13px">Ещё никого нет. Добавьте людей!</div></div>
+    </div>
+  </div>
+
+  <!-- ДОБАВИТЬ -->
+  <div class="section" id="tab-add">
+    <div class="card">
+      <div class="card-title">➕ Добавить человека</div>
+      <div class="form-group">
+        <label class="form-label">Имя и фамилия *</label>
+        <input class="form-input" id="pName" placeholder="Иван Иванов">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Дата рождения *</label>
+          <input class="form-input" id="pDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Фото (URL или загрузить)</label>
+          <input class="form-input" id="pPhotoUrl" placeholder="https://..." oninput="previewPhoto()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Загрузить фото с компьютера</label>
+        <input type="file" accept="image/*" id="pPhotoFile" onchange="loadPhotoFile()" style="color:var(--text2);font-size:12px">
+        <div id="photoPreview" class="photo-placeholder">👤</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Персональное поздравление (необязательно)</label>
+        <input class="form-input" id="pMsg" placeholder="Пусть все мечты сбываются!">
+      </div>
+      <button class="btn btn-green btn-full" onclick="addPerson()">✓ Добавить</button>
+    </div>
+  </div>
+
+  <!-- НАСТРОЙКИ -->
+  <div class="section" id="tab-settings">
+    <div class="card">
+      <div class="card-title">🤖 Настройка бота</div>
+      <div class="info-box">
+        <div class="step"><div class="step-num">1</div><div>Откройте Telegram и найдите вашего бота: <b style="color:var(--accent)">@myfamili_birthday_bot</b></div></div>
+        <div class="step"><div class="step-num">2</div><div>Добавьте бота в вашу группу как администратора</div></div>
+        <div class="step"><div class="step-num">3</div><div>Напишите в группе команду: <b style="color:var(--accent)">/chatid</b> — бот ответит ID группы</div></div>
+        <div class="step"><div class="step-num">4</div><div>Скопируйте ID и вставьте ниже</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chat ID группы</label>
+        <input class="form-input" id="chatId" placeholder="-1001234567890" value="">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Время отправки (по времени Ташкента)</label>
+        <input class="form-input" id="sendTime" type="time" value="09:00">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="saveSettings()">💾 Сохранить настройки</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔑 Bot Token</div>
+      <div class="chat-id-box">
+        <span style="font-family:monospace;font-size:11px">8224049082:AAHDk...T8bzY</span>
+        <button class="copy-btn" onclick="copyToken()">Копировать</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">⚠️ Никому не передавайте токен!</div>
+    </div>
+  </div>
+
+  <!-- ОТПРАВИТЬ -->
+  <div class="section" id="tab-send">
+    <div class="card">
+      <div class="card-title">📤 Отправить поздравление</div>
+      <div class="info-box">Здесь можно вручную отправить поздравление в группу. Также бот автоматически отправляет каждый день в указанное время.</div>
+
+      <div class="form-group">
+        <label class="form-label">Выберите именинника</label>
+        <select class="form-input" id="sendPerson" style="cursor:pointer;appearance:none">
+          <option value="">-- Выберите --</option>
+        </select>
+      </div>
+
+      <div id="msgPreview" style="background:var(--bg3);border:.5px solid var(--border2);border-radius:10px;padding:14px;margin:10px 0;display:none">
+        <div style="font-size:13px;color:var(--text2);line-height:1.8" id="previewText"></div>
+      </div>
+
+      <button class="send-btn" onclick="sendBirthday()">🎉 Отправить поздравление в группу</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔍 Проверить бота</div>
+      <div class="info-box">Нажмите кнопку чтобы проверить — бот работает или нет.</div>
+      <button class="btn btn-primary btn-full" onclick="testBot()">🤖 Проверить подключение</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOKEN = '8224049082:AAHDkXUWJ2pAKjxgh51Ezypy8QaHh3T8bzY';
+const API = `https://api.telegram.org/bot${TOKEN}`;
+
+let people = JSON.parse(localStorage.getItem('bd_people')||'[]');
+let settings = JSON.parse(localStorage.getItem('bd_settings')||'{"chatId":"","sendTime":"09:00"}');
+
+// Init
+checkBot();
+renderPeople();
+loadSettings();
+setInterval(checkAutoSend, 60000);
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='send') updateSendSelect();
+}
+
+async function checkBot(){
+  try{
+    const r=await fetch(`${API}/getMe`);
+    const d=await r.json();
+    if(d.ok){
+      document.getElementById('botStatus').textContent=`● @${d.result.username}`;
+      document.getElementById('botStatus').style.color='#34d399';
+    }
+  }catch(e){
+    document.getElementById('botStatus').textContent='● Нет соединения';
+    document.getElementById('botStatus').style.color='#f87171';
+  }
+}
+
+async function testBot(){
+  const chatId=document.getElementById('chatId').value||settings.chatId;
+  if(!chatId){toast('Сначала укажите Chat ID группы!');return;}
+  try{
+    const r=await fetch(`${API}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:'🤖 BirthdayBot работает! Всё настроено правильно ✅',parse_mode:'HTML'})});
+    const d=await r.json();
+    if(d.ok) toast('✅ Тест сообщение отправлено!');
+    else toast('❌ Ошибка: '+d.description);
+  }catch(e){toast('❌ Нет соединения');}
+}
+
+function loadPhotoFile(){
+  const file=document.getElementById('pPhotoFile').files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('photoPreview');
+    prev.innerHTML=`<img src="${e.target.result}" class="photo-preview">`;
+    prev.dataset.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewPhoto(){
+  const url=document.getElementById('pPhotoUrl').value;
+  if(url){
+    const prev=document.getElementById('photoPreview');
+    prev.innerHTML=`<img src="${url}" class="photo-preview" onerror="this.parentNode.innerHTML='👤'">`;
+    prev.dataset.src=url;
+  }
+}
+
+function addPerson(){
+  const name=document.getElementById('pName').value.trim();
+  const date=document.getElementById('pDate').value;
+  if(!name||!date){toast('Заполните имя и дату!');return;}
+  const photoEl=document.getElementById('photoPreview');
+  const photo=photoEl.dataset.src||document.getElementById('pPhotoUrl').value||'';
+  const msg=document.getElementById('pMsg').value.trim();
+  people.push({id:Date.now(),name,date,photo,msg});
+  localStorage.setItem('bd_people',JSON.stringify(people));
+  document.getElementById('pName').value='';
+  document.getElementById('pDate').value='';
+  document.getElementById('pPhotoUrl').value='';
+  document.getElementById('pMsg').value='';
+  document.getElementById('photoPreview').innerHTML='👤';
+  delete document.getElementById('photoPreview').dataset.src;
+  toast('✓ '+name+' добавлен(а)!');
+  renderPeople();
+  showTab('people');
+}
+
+function renderPeople(){
+  const list=document.getElementById('peopleList');
+  if(!people.length){list.innerHTML='<div style="color:var(--text3);font-size:13px">Ещё никого нет. Добавьте людей!</div>';return;}
+  const today=new Date();
+  list.innerHTML=[...people].sort((a,b)=>{
+    return daysUntil(a.date)-daysUntil(b.date);
+  }).map(p=>`
+    <div class="person-card">
+      ${p.photo?`<img src="${p.photo}" class="person-photo" onerror="this.style.display='none'">`:
+      `<div class="person-photo-placeholder">👤</div>`}
+      <div class="person-info">
+        <div class="person-name">${p.name}${isToday(p.date)?'<span class="today-badge">🎂 Сегодня!</span>':''}</div>
+        <div class="person-date">📅 ${formatDate(p.date)}</div>
+        <div class="person-days">${daysUntilText(p.date)}</div>
+      </div>
+      <button class="btn btn-red" onclick="deletePerson(${p.id})" style="padding:6px 10px;font-size:12px">🗑</button>
+    </div>`).join('');
+}
+
+function deletePerson(id){
+  if(!confirm('Удалить?'))return;
+  people=people.filter(p=>p.id!==id);
+  localStorage.setItem('bd_people',JSON.stringify(people));
+  renderPeople();toast('Удалено');
+}
+
+function isToday(dateStr){
+  const d=new Date(dateStr);
+  const t=new Date();
+  return d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();
+}
+
+function daysUntil(dateStr){
+  const d=new Date(dateStr);
+  const t=new Date();
+  const next=new Date(t.getFullYear(),d.getMonth(),d.getDate());
+  if(next<t) next.setFullYear(t.getFullYear()+1);
+  return Math.round((next-t)/(1000*60*60*24));
+}
+
+function daysUntilText(dateStr){
+  const d=daysUntil(dateStr);
+  if(d===0) return '🎉 Сегодня день рождения!';
+  if(d===1) return '⏰ Завтра день рождения!';
+  return `📆 Через ${d} дней`;
+}
+
+function formatDate(dateStr){
+  const d=new Date(dateStr);
+  const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function getAge(dateStr){
+  const d=new Date(dateStr);
+  const t=new Date();
+  return t.getFullYear()-d.getFullYear();
+}
+
+function buildMessage(p){
+  const age=getAge(p.date);
+  const emojis=['🎂','🎉','🎊','🌟','🥳','✨','🎈','💐'];
+  const em=emojis[Math.floor(Math.random()*emojis.length)];
+  const wishes=[
+    'Пусть каждый день приносит радость и счастье!',
+    'Желаем крепкого здоровья, любви и исполнения всех желаний!',
+    'Пусть все мечты сбываются, а жизнь будет полна ярких моментов!',
+    'Счастья, здоровья и удачи во всех начинаниях!',
+    'Пусть этот день будет особенным и незабываемым!'
+  ];
+  const wish=p.msg||wishes[Math.floor(Math.random()*wishes.length)];
+  return `${em} <b>С Днём Рождения, ${p.name}!</b> ${em}\n\n🎂 Сегодня исполняется <b>${age} лет</b>!\n\n💝 ${wish}\n\n🎊 Поздравляем от всей группы!`;
+}
+
+function updateSendSelect(){
+  const sel=document.getElementById('sendPerson');
+  sel.innerHTML='<option value="">-- Выберите --</option>'+
+    people.map(p=>`<option value="${p.id}">${p.name} (${formatDate(p.date)})</option>`).join('');
+  sel.onchange=()=>{
+    const p=people.find(x=>x.id==sel.value);
+    const prev=document.getElementById('msgPreview');
+    if(p){
+      document.getElementById('previewText').innerHTML=buildMessage(p).replace(/\n/g,'<br>');
+      prev.style.display='block';
+    } else prev.style.display='none';
+  };
+}
+
+async function sendBirthday(){
+  const chatId=settings.chatId;
+  if(!chatId){toast('Укажите Chat ID в настройках!');return;}
+  const sel=document.getElementById('sendPerson');
+  const p=people.find(x=>x.id==sel.value);
+  if(!p){toast('Выберите именинника!');return;}
+  const msg=buildMessage(p);
+  try{
+    if(p.photo){
+      const r=await fetch(`${API}/sendPhoto`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,photo:p.photo,caption:msg,parse_mode:'HTML'})});
+      const d=await r.json();
+      if(d.ok) toast('🎉 Поздравление отправлено!');
+      else {
+        // Фото бўлмаса матн юборамиз
+        await sendTextOnly(chatId,msg);
+      }
+    } else {
+      await sendTextOnly(chatId,msg);
+    }
+  }catch(e){toast('❌ Ошибка отправки');}
+}
+
+async function sendTextOnly(chatId,msg){
+  const r=await fetch(`${API}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:msg,parse_mode:'HTML'})});
+  const d=await r.json();
+  if(d.ok) toast('🎉 Поздравление отправлено!');
+  else toast('❌ '+d.description);
+}
+
+function saveSettings(){
+  settings.chatId=document.getElementById('chatId').value.trim();
+  settings.sendTime=document.getElementById('sendTime').value;
+  localStorage.setItem('bd_settings',JSON.stringify(settings));
+  toast('✅ Настройки сохранены!');
+}
+
+function loadSettings(){
+  if(settings.chatId) document.getElementById('chatId').value=settings.chatId;
+  if(settings.sendTime) document.getElementById('sendTime').value=settings.sendTime;
+}
+
+function checkAutoSend(){
+  const now=new Date();
+  const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if(timeStr!==settings.sendTime) return;
+  const lastSent=localStorage.getItem('bd_lastSent');
+  const today=now.toDateString();
+  if(lastSent===today) return;
+  const todayBirthdays=people.filter(p=>isToday(p.date));
+  if(todayBirthdays.length&&settings.chatId){
+    todayBirthdays.forEach(async p=>{
+      const msg=buildMessage(p);
+      if(p.photo){
+        await fetch(`${API}/sendPhoto`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:settings.chatId,photo:p.photo,caption:msg,parse_mode:'HTML'})});
+      } else {
+        await fetch(`${API}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:settings.chatId,text:msg,parse_mode:'HTML'})});
+      }
+    });
+    localStorage.setItem('bd_lastSent',today);
+    toast('🎂 Автоматически отправлено!');
+  }
+}
+
+function copyToken(){
+  navigator.clipboard.writeText(TOKEN).catch(()=>{});
+  toast('Токен скопирован!');
+}
+
+function toast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
