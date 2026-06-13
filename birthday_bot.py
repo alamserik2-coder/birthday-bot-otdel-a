@@ -1,15 +1,18 @@
-
 """
 Скрипт для отправки поздравления с днём рождения в Telegram-группу.
+Если у именинника указано фото - отправляется фото с подписью.
+Если фото нет - отправляется обычное текстовое сообщение.
+
 Запускается ОДИН РАЗ при каждом срабатывании по расписанию (GitHub Actions cron).
 
-Для каждого нового бота (новой группы) создайте ОТДЕЛЬНЫЙ репозиторий
-(или отдельную папку) с:
-  - этим файлом (birthday_bot.py)
-  - requirements.txt
-  - birthdays.json со своим списком именинников
-  - .github/workflows/birthday.yml со своим расписанием
-  - своими секретами BOT_TOKEN и GROUP_ID в настройках репозитория
+Формат birthdays.json:
+[
+  {"name": "Имя Фамилия", "date": "DD-MM", "photo": "photos/имя.jpg"},
+  {"name": "Имя2", "date": "DD-MM"}
+]
+
+Поле "photo" необязательно - указывайте путь к файлу внутри репозитория
+(например, в папке photos/), если хотите отправлять фото именинника.
 
 Токен и ID группы берутся из переменных окружения (Secrets),
 не хранить их прямо в коде!
@@ -28,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 # ========== НАСТРОЙКИ ==========
 
-# Токен и ID берутся из переменных окружения (GitHub Secrets)
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 GROUP_ID = int(os.environ["GROUP_ID"])
 
@@ -38,7 +40,7 @@ BIRTHDAYS_FILE = "birthdays.json"
 # {name} будет заменено на имя именинника
 
 CONGRATS_TEMPLATES = [
-    "🎉 Сегодня {name} отмечает свой день рождения! Поздравляем с этим прекрасным днём, желаем здоровья, счастья и успехов во всём! 🎂",
+    "🎉 Сегодня день рождения у {name}! Поздравляем с этим прекрасным днём, желаем здоровья, счастья и успехов во всём! 🎂",
     "🥳 У нас сегодня особенный день — {name} отмечает день рождения! Пусть этот год принесёт много радости и добрых моментов! 🎈",
     "🎊 С днём рождения, {name}! Желаем крепкого здоровья, отличного настроения и исполнения всех желаний! 🎁",
     "🌟 Сегодня поздравляем {name} с днём рождения! Пусть впереди ждут только хорошие новости и приятные сюрпризы! 🎉",
@@ -47,9 +49,7 @@ CONGRATS_TEMPLATES = [
 
 
 def load_birthdays(filepath: str) -> list:
-    """Загружает список именинников из JSON файла.
-    Формат файла: [{"name": "Имя Фамилия", "date": "DD-MM"}, ...]
-    """
+    """Загружает список именинников из JSON файла."""
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -74,11 +74,24 @@ async def main():
             found = True
             template = random.choice(CONGRATS_TEMPLATES)
             message = template.format(name=person["name"])
+            photo_path = person.get("photo")
+
             try:
-                await bot.send_message(chat_id=GROUP_ID, text=message)
-                logger.info(f"Отправлено поздравление для {person['name']}")
+                if photo_path and os.path.exists(photo_path):
+                    with open(photo_path, "rb") as photo_file:
+                        await bot.send_photo(
+                            chat_id=GROUP_ID,
+                            photo=photo_file,
+                            caption=message,
+                        )
+                    logger.info(f"Отправлено поздравление с фото для {person['name']}")
+                else:
+                    if photo_path:
+                        logger.warning(f"Фото не найдено по пути: {photo_path}")
+                    await bot.send_message(chat_id=GROUP_ID, text=message)
+                    logger.info(f"Отправлено текстовое поздравление для {person['name']}")
             except Exception as e:
-                logger.error(f"Ошибка отправки сообщения: {e}")
+                logger.error(f"Ошибка отправки сообщения для {person['name']}: {e}")
 
     if not found:
         logger.info("Сегодня именинников нет")
@@ -86,3 +99,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+   
