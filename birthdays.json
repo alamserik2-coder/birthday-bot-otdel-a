@@ -1,1 +1,4 @@
-.github/workflows/birthday.yml
+[
+  {"name": "Имя1", "date": "15-06"},
+  {"name": "Имя2", "date": "23-07"}
+]
