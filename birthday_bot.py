@@ -1,1 +1,20 @@
-birthday_bot.py
+name: Birthday Bot
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # 9:00 по Ташкенту (UTC+5)
+  workflow_dispatch:  # позволяет запустить вручную для теста
+
+jobs:
+  send-birthday:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python birthday_bot.py
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GROUP_ID: ${{ secrets.GROUP_ID }}
