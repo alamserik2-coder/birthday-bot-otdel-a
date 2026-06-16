@@ -75,6 +75,13 @@ async def main():
             template = random.choice(CONGRATS_TEMPLATES)
             message = template.format(name=person["name"])
             photo_path = person.get("photo")
+          
+            # Добавляем возраст, если указан год рождения
+            year = person.get("year")
+            if year:
+                age = now.year - year
+                message += f"\nСегодня исполняется {age} лет! 🎈"
+            photo_path = person.get("photo")
 
             try:
                 if photo_path and os.path.exists(photo_path):
