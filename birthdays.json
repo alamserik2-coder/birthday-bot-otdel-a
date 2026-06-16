@@ -1,5 +1,18 @@
 [
   {"name": "Зафарбек Абдуллаев", "date": "13-06", "photo": "photos_zafar.jpg.jpg"},
-  {"name": "Dilnoza", "date": "23-07", "photo": "photos/dilnoza.jpg"},
-  {"name": "Botir", "date": "01-12"}
+  {"name": "Мухатов Муродбек", "date": "29-07", "photo": "photos/murod.jpg"},
+  {"name": "Аллаберганов Жасурбек", "date": "22-08", "photo": "photos/jasur.jpg"},
+  {"name": "Машарипов Илхам", "date": "17-09", "photo": "photos/ilham.jpg"},
+  {"name": "Аллаберганов Сарвар", "date": "06-10", "photo": "photos/sarvar.jpg"},
+  {"name": "Курбанов Равшан", "date": "23-10", "photo": "photos/ravshan.jpg"},
+  {"name": "Якубов Сарвар", "date": "23-11", "photo": "photos/yakubov.jpg"},
+  {"name": "Сабиров Мухтар", "date": "10-12", "photo": "photos/muhtar.jpg"},
+  {"name": "Муртазалиев Руслан", "date": "20-01", "photo": "photos/ruslan.jpg"},
+  {"name": "Бабажанов Максудбек", "date": "22-01", "photo": "photos/maksud.jpg"},
+  {"name": "Аллаберганов Азамат", "date": "10-03", "photo": "photos/azamat.jpg"},
+  {"name": "Авезов Анвар", "date": "28-04", "photo": "photos/anvar.jpg"},
+  {"name": "Пак Андрей", "date": "05-05", "photo": "photos/andrey.jpg"},
+  {"name": "Кличев Мурад", "date": "09-05", "photo": "photos/murad.jpg"},
+  {"name": "Сим Сергей", "date": "14-05", "photo": "photos/serega.jpg"},
+  {"name": "Мухатов Муродбек", "date": "29-07", "photo": "photos/murod.jpg"}
 ]
